@@ -79,6 +79,10 @@ Load based on the code being reviewed:
 | `references/prompt-engineering.md` | LLM prompt code, prompt templates, prompt evaluation |
 | `references/devops-mlops.md` | Dockerfiles, CI/CD configs, deployment code, monitoring |
 
+## Related Skills
+
+If the code being reviewed is async (`asyncio`, FastAPI endpoints, background workers, queue consumers) or is meant to scale across multiple instances, invoke the `python-async-scaling` skill instead of relying on this skill's own async coverage — it has the dedicated checklists for event-loop blocking, cross-instance concurrency, and distributed scaling. Keep this skill's async hints to quick, single-hint nudges; hand off to `python-async-scaling` for anything requiring a fuller pass. Don't invoke it for code with no concurrency or async surface at all.
+
 ## Selection Strategy
 
 Choose the **most impactful** hint based on priority:

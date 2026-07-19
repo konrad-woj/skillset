@@ -15,6 +15,10 @@ Single-instance async and distributed async solve different problems:
 
 A semaphore, lock, or rate limiter that only exists in local process memory does nothing for a fleet of pods. That's the #1 mistake this skill exists to prevent.
 
+## Used alongside another skill
+
+This skill is frequently pulled in mid-task by `code-reviewer`, `feature-coder`, or `python-tutor` when the code in front of them turns out to be async, FastAPI-based, or queue/worker-based. When that happens, don't replace the calling skill's workflow (review steps, TDD phases, hint format) — feed this skill's checklist items and reference guidance into whatever step is currently active (e.g. code-reviewer's "Performance" step, or feature-coder's Phase 1 planning/Phase 5 implementation). Only run this skill standalone, with its own pass over all reference files, when no other skill is already driving the task.
+
 ## How to use this skill
 
 1. Identify which situation applies and read the matching reference file before writing code:

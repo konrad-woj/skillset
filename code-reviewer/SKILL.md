@@ -78,6 +78,8 @@ cat pyproject.toml
 - **Code organization**: `references/maintainability-patterns.md`
 - **GitLab MRs / GitHub PRs**: `references/vcs-integration.md`
 
+**Cross-skill: async/concurrency code.** If the diff touches `async def`, `asyncio`, FastAPI endpoints/dependencies, background workers, queue consumers (SQS/RabbitMQ/Celery), or anything deployed across multiple instances/pods/replicas, invoke the `python-async-scaling` skill in addition to this one — it has the deeper checklists for event-loop blocking, cross-instance concurrency limits, idempotency, and graceful shutdown that this skill's own `performance-patterns.md` only covers at a summary level. Skip it for code that is plainly synchronous (no `async`/`await`, no queue or worker involved) — don't pull it in just because a service happens to be a microservice.
+
 ### Step 3: Analyze the Code
 
 **Review scope:**
@@ -276,3 +278,9 @@ See **`references/vcs-comments-workflow.md`** for full bash commands, API calls,
 | `references/vcs-integration.md` | GitLab MR / GitHub PR reviews |
 | `references/vcs-comments-workflow.md` | Posting comments to GitLab MRs or GitHub PRs |
 | `references/examples.md` | Worked examples: security, duplication, performance |
+
+## Related Skills
+
+| Skill | Invoke alongside this one when |
+|---|---|
+| `python-async-scaling` | The diff touches `async`/`await`, FastAPI endpoints, background workers, or queue consumers, or the service runs as multiple instances/pods. Not needed for plainly synchronous code. |

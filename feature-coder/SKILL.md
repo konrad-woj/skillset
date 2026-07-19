@@ -35,6 +35,8 @@ Interview the user about requirements, async/sync choice, caching opportunities,
 
 Key interview questions: async or sync? which asyncio patterns? what can be cached? what shared packages exist to reuse?
 
+If the feature is async, FastAPI-based, a background worker/queue consumer, or will run across multiple instances/replicas, also invoke the `python-async-scaling` skill during planning and again during implementation (Phases 1 and 5) — it covers event-loop-blocking pitfalls, cross-instance concurrency limits, idempotency, and resilience patterns that this skill doesn't duplicate. Skip it for plainly synchronous, single-process work.
+
 → **[references/planning.md](references/planning.md)** — Interview steps, plan structure, iteration patterns
 
 ### Phase 2: Configuration & Data Models
@@ -158,3 +160,9 @@ TodoWrite([
 | [references/best-practices.md](references/best-practices.md) | Codebase conventions: shared packages, async patterns, caching, imports |
 | [references/common-mistakes.md](references/common-mistakes.md) | 15 common mistakes with examples and fixes |
 | [references/examples.md](references/examples.md) | Worked examples of all three workflow modes |
+
+## Related Skills
+
+| Skill | Invoke alongside this one when |
+|---|---|
+| `python-async-scaling` | The feature/refactor is async, FastAPI-based, a background worker/queue consumer, or scales across multiple instances/replicas. Not needed for plainly synchronous, single-process work. |
