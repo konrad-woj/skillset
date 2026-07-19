@@ -116,7 +116,4 @@ Before marking the feature as complete, ensure:
 - [ ] Test data isolates features being tested
 
 ### Async (if applicable)
-- [ ] Proper asyncio patterns used (Semaphore, gather, etc.)
-- [ ] Async context managers used for resources
-- [ ] AsyncMock used in tests
-- [ ] Tests marked with `@pytest.mark.asyncio`
+- [ ] Invoke `python-async-scaling` and run its "Quick mistake checklist" (blocking calls, untracked tasks, unbounded queues, idempotency, graceful shutdown) — the items above (context managers, AsyncMock, `@pytest.mark.asyncio`) are necessary but not sufficient for async correctness

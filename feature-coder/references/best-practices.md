@@ -87,36 +87,7 @@ from ..logger import timer
 - Need for concurrent processing with rate limiting
 - User explicitly requests async
 
-**Default async pattern** - Use `asyncio.Semaphore` for rate-limited concurrency:
-```python
-async def process_many(items, max_concurrent=10):
-    semaphore = asyncio.Semaphore(max_concurrent)
-
-    async def process_with_limit(item):
-        async with semaphore:  # Context manager ensures proper release
-            return await process_item(item)
-
-    return await asyncio.gather(*[process_with_limit(i) for i in items])
-```
-
-**Other asyncio patterns** (always use context managers):
-- `asyncio.gather()` - Collect all results
-- `asyncio.as_completed()` - Process as available
-- `asyncio.Lock` - Mutual exclusion (use `async with lock:`)
-- `asyncio.wait_for()` - Timeouts
-- `asyncio.Queue` - Producer-consumer
-
-**Resource cleanup in async code**:
-```python
-# GOOD - Async context manager ensures cleanup
-async with aiohttp.ClientSession() as session:
-    async with session.get(url) as response:
-        data = await response.json()
-
-# GOOD - Async file operations
-async with aiofiles.open("file.txt", "r") as f:
-    content = await f.read()
-```
+For the actual patterns (which concurrency primitive, resource cleanup, context managers around `Semaphore`/`Lock`/`Queue`), invoke `python-async-scaling` — its `asyncio-fundamentals.md` and `decision-guide.md` cover this in more depth, including cross-instance considerations that a single-process example would miss. Don't re-derive this guidance independently.
 
 ## 5. Testing Strategy
 

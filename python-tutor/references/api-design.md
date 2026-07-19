@@ -354,36 +354,7 @@ def process_data(
 
 ### Async Background Processing
 
-```python
-# For truly long-running tasks, use task queue
-from celery import Celery
-
-celery_app = Celery('tasks', broker='redis://localhost')
-
-@celery_app.task
-def expensive_ml_task(data: dict):
-    # Long-running ML task
-    result = train_model(data)
-    return result
-
-@app.post("/train")
-def start_training(data: TrainingRequest):
-    task = expensive_ml_task.delay(data.dict())
-
-    return {
-        "task_id": task.id,
-        "status": "queued"
-    }
-
-@app.get("/task/{task_id}")
-def get_task_status(task_id: str):
-    task = celery_app.AsyncResult(task_id)
-    return {
-        "task_id": task_id,
-        "status": task.state,
-        "result": task.result if task.ready() else None
-    }
-```
+For truly long-running work, `BackgroundTasks` isn't enough — invoke the `python-async-scaling` skill (`queues-and-workers.md`, `decision-guide.md` §2) for the fuller pattern: enqueue immediately, return a job id and `202 Accepted`, and size the consumer's concurrency at the queue layer (`prefetch_count`), not with an in-process semaphore. That guidance is framework-agnostic (Celery, SQS, RabbitMQ, arq) rather than repeated per-library here.
 
 ## API Versioning
 
@@ -621,53 +592,6 @@ def predict(request: PredictionRequest):
 
 ## Performance Optimization
 
-### Async Endpoints
+### Async Endpoints and Connection Pooling
 
-```python
-# Before: Blocking I/O
-@app.get("/fetch-data")
-def fetch_data():
-    response = requests.get("https://api.example.com/data")  # Blocks
-    return response.json()
-
-# After: Async
-import httpx
-
-@app.get("/fetch-data")
-async def fetch_data():
-    async with httpx.AsyncClient() as client:
-        response = await client.get("https://api.example.com/data")
-        return response.json()
-```
-
-### Connection Pooling
-
-```python
-# Reuse HTTP client
-from httpx import AsyncClient
-
-class HTTPClientManager:
-    def __init__(self):
-        self.client = None
-
-    async def __aenter__(self):
-        self.client = AsyncClient()
-        return self.client
-
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        await self.client.aclose()
-
-@app.on_event("startup")
-async def startup():
-    app.state.http_client = AsyncClient()
-
-@app.on_event("shutdown")
-async def shutdown():
-    await app.state.http_client.aclose()
-
-@app.get("/data")
-async def get_data(request: Request):
-    client = request.app.state.http_client
-    response = await client.get("https://api.example.com/data")
-    return response.json()
-```
+Blocking calls inside `async def` routes, and per-request HTTP/DB clients that should be reused via `lifespan`/app state instead, are both covered by the `python-async-scaling` skill's `fastapi-patterns.md` (§1 and §3) — invoke it for this hint rather than reproducing the pattern here, since that file also covers DB connection pool sizing across replicas and the now-deprecated-in-favor-of-`lifespan` `@app.on_event` style.

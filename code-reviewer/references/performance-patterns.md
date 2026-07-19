@@ -42,13 +42,9 @@
 ## API Performance
 
 ### Async Opportunities
-- **Check**: Multiple I/O operations executed sequentially
-- **Bad**:
-  ```python
-  result1 = await fetch_data_1()
-  result2 = await fetch_data_2()
-  ```
+- **Check**: Multiple independent `await` calls executed sequentially instead of concurrently
 - **Good**: `results = await asyncio.gather(fetch_data_1(), fetch_data_2())`
+- For the fuller pattern set (TaskGroup, cancellation, fire-and-forget tasks, event loop blocking) invoke `python-async-scaling` — this file only covers the review checklist item, not the underlying async guidance.
 
 ### Caching Missing
 - **Check**: Expensive computations or API calls repeated with same inputs
@@ -95,7 +91,7 @@
 
 ### Parallel API Calls
 - **Check**: Sequential LLM calls when they could be parallel
-- **Good**: Use `asyncio.gather()` for independent calls
+- **Good**: Use `asyncio.gather()` for independent calls (see `python-async-scaling` for cancellation/error-handling nuances)
 
 ## Memory Performance
 
@@ -115,40 +111,7 @@
 
 ## Asyncio Event Loop Blocking
 
-This is a critical class of bug in FastAPI/async services. A sync call inside an `async def` that takes more than ~100ms freezes the entire event loop — no other requests are served, health probes time out, and on platforms like Azure Container Apps the liveness probe will restart the container mid-request.
-
-### Sync CPU-bound calls in async functions
-- **Check**: ML inference, tokenization, image processing, or heavy CPU work called directly inside `async def` without offloading
-- **Bad**:
-  ```python
-  async def process(doc_path: Path) -> Document:
-      doc = converter.convert(doc_path)  # blocks event loop during ML inference
-  ```
-- **Good**:
-  ```python
-  async def process(doc_path: Path) -> Document:
-      doc = await asyncio.to_thread(converter.convert, doc_path)
-  ```
-- **Libraries to watch**: docling, EasyOCR, PyTorch/transformers inference, Pillow heavy ops, scikit-learn fit/predict, pandas on large frames
-
-### Sync file/subprocess I/O in async functions
-- **Check**: `open()`, `Path.read_bytes()`, `subprocess.run()`, `os.listdir()` called directly inside `async def`
-- **Bad**:
-  ```python
-  async def load(path: Path) -> bytes:
-      return path.read_bytes()  # sync disk I/O blocks event loop
-  ```
-- **Good**: `await asyncio.to_thread(path.read_bytes)` or use `aiofiles`
-- **Exception**: Reading small config files at startup (not in request path) is fine
-
-### How to spot it
-When reviewing async functions, mentally ask: "Could this line take >100ms?" If yes and it's not an `await`, it's a candidate. Key signals:
-- No `await` keyword on a call that does heavy work
-- Third-party library that has no async API (docling, EasyOCR, most ML libs)
-- `subprocess.run()` / `os.system()` in an async context
-
-### Impact context
-The severity depends on deployment. On Azure Container Apps or Kubernetes with liveness probes, blocking the event loop for the probe interval (typically 30s) causes container restarts mid-request — this is a production reliability issue, not just a performance concern. Flag as 🔴 Critical if the code is in a request handler that's known to run long.
+Any `async def` handler with a sync call that takes more than ~100ms (ML inference, `open()`/`Path.read_bytes()`, `subprocess.run()`, a sync DB driver) freezes the entire event loop for every other request — flag as 🔴 Critical, especially on Azure Container Apps/Kubernetes where a stalled liveness probe restarts the container mid-request. This is `python-async-scaling`'s core principle (see its `asyncio-fundamentals.md` and `checklists.md`) — invoke that skill for the full pattern set and code examples rather than re-deriving them here.
 
 ## Python-Specific Performance
 

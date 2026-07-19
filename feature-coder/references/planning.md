@@ -18,13 +18,7 @@ Create a comprehensive implementation plan that the user validates BEFORE any co
 - Identify any existing patterns or conventions to follow
 - **Async vs Sync**: Determine if the feature should be async or sync
   - Ask: "Should this be implemented as async or sync?"
-  - If async, ask about asyncio implementation approach:
-    - **`asyncio.gather()`** - Run multiple coroutines concurrently, collect all results
-    - **`asyncio.as_completed()`** - Process results as they complete
-    - **`asyncio.Semaphore`** - Limit concurrent operations (default choice for rate limiting)
-    - **`asyncio.Lock`** - Mutual exclusion for shared resources
-    - **`asyncio.wait_for()`** - Set timeouts for operations
-    - **`asyncio.Queue`** - Producer-consumer patterns
+  - If async, invoke the `python-async-scaling` skill and use its `decision-guide.md` to pick the right primitive (gather vs. TaskGroup, semaphore vs. distributed lock, queue vs. BackgroundTasks, etc.) — it accounts for whether the choice needs to hold up across multiple replicas, which a primitive list alone doesn't capture
   - Inform user about trade-offs and help choose the best approach
   - **Remember**: Async code requires async test fixtures and `pytest-asyncio`
 - **Caching opportunities**: Identify what can be cached

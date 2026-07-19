@@ -109,9 +109,7 @@ Use reasoning, not text matching. Follow `references/code-duplication-detection.
 4. Flag only true duplicates (same purpose, same approach, same logic)
 
 #### 3.4 Performance
-Check for N+1 queries, missing batching in ML operations, sync I/O that could be async, missing caching, memory inefficiencies. See `references/performance-patterns.md`.
-
-**Always check for event loop blocking in async code**: any `async def` function that calls a sync CPU-bound or I/O operation (ML inference, file reads, subprocess) without `asyncio.to_thread()` or `run_in_executor()` freezes the entire event loop. On probed deployments (ACA, Kubernetes) this causes container restarts mid-request — flag as 🔴 Critical.
+Check for N+1 queries, missing batching in ML operations, missing caching, memory inefficiencies. See `references/performance-patterns.md`. For async code specifically (event loop blocking, cross-instance concurrency), invoke `python-async-scaling` per the cross-skill note in Step 2 above rather than reviewing it from first principles.
 
 #### 3.5 Maintainability
 Check for functions doing too much, poor naming, missing type hints on public APIs, missing docstrings on complex functions, hard-to-test code. See `references/maintainability-patterns.md`.

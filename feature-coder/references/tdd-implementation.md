@@ -212,6 +212,8 @@ async def process_batch(
     return await asyncio.gather(*tasks)
 ```
 
+Before finalizing an implementation like this, invoke `python-async-scaling` to check whether `max_concurrent` needs to account for running across multiple replicas (an in-process `Semaphore` doesn't coordinate across pods) — see its `decision-guide.md`.
+
 ### Step 5.6: Keep Code DRY
 
 As you implement, watch for repetitive patterns and extract them:
@@ -378,18 +380,11 @@ def score_field(self, source, target, ...):
     similarity = self.similarity_model.calculate(source, target)  # Must call mocked method
 ```
 
-### Issue 2: Async Test Hangs
+### Issue 2: Async Test Hangs or Mocks Misbehave
 
-**Problem**: Test never completes
+**Problem**: Test never completes, or a mocked async function raises `TypeError: object MagicMock can't be used in 'await' expression`
 
-**Solution**: Ensure all async calls use `await`
-```python
-# ❌ BAD
-result = self.process_item(item)  # Missing await
-
-# ✅ GOOD
-result = await self.process_item(item)
-```
+**Solution**: Missing `await` and `MagicMock` vs. `AsyncMock` mixups are the two most common causes. See `python-async-scaling`'s `references/testing-async-code.md` for the full set of async-testing pitfalls (mock types, leaked tasks, idempotency under retries) rather than debugging from scratch.
 
 ### Issue 3: Real Resources Loaded in Unit Test
 

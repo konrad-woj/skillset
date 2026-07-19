@@ -157,7 +157,7 @@ TodoWrite([
 | [references/draft-implementation.md](references/draft-implementation.md) | Phase 4 — skeleton with NotImplementedError |
 | [references/tdd-implementation.md](references/tdd-implementation.md) | Phase 5 — uncommenting and implementing |
 | [references/integration-validation.md](references/integration-validation.md) | Phase 6 — final validation |
-| [references/best-practices.md](references/best-practices.md) | Codebase conventions: shared packages, async patterns, caching, imports |
+| [references/best-practices.md](references/best-practices.md) | Codebase conventions: shared packages, caching, imports (defers to `python-async-scaling` for async patterns) |
 | [references/common-mistakes.md](references/common-mistakes.md) | 15 common mistakes with examples and fixes |
 | [references/examples.md](references/examples.md) | Worked examples of all three workflow modes |
 

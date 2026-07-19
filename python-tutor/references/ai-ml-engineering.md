@@ -227,56 +227,7 @@ result = model.predict(features.basic)  # Only basic computed
 
 ## Async ML Operations
 
-### Async Model Inference
-
-```python
-# Before: Synchronous API calls
-def get_predictions(items):
-    results = []
-    for item in items:
-        result = model_api.predict(item)  # Blocking
-        results.append(result)
-    return results
-
-# After: Async batch requests
-import asyncio
-import aiohttp
-
-async def get_predictions_async(items):
-    async with aiohttp.ClientSession() as session:
-        tasks = [predict_item(session, item) for item in items]
-        return await asyncio.gather(*tasks)
-
-async def predict_item(session, item):
-    async with session.post(API_URL, json=item) as resp:
-        return await resp.json()
-```
-
-### Background Processing
-
-```python
-# Before: Blocking preprocessing
-def process_request(data):
-    preprocessed = expensive_preprocessing(data)  # Blocks
-    result = model.predict(preprocessed)
-    return result
-
-# After: Background worker
-from concurrent.futures import ThreadPoolExecutor
-
-executor = ThreadPoolExecutor(max_workers=4)
-
-def process_request_async(data):
-    future = executor.submit(expensive_preprocessing, data)
-    preprocessed = future.result()
-    return model.predict(preprocessed)
-
-# Or with asyncio
-async def process_request_async(data):
-    loop = asyncio.get_event_loop()
-    preprocessed = await loop.run_in_executor(None, expensive_preprocessing, data)
-    return model.predict(preprocessed)
-```
+Converting sequential per-item model-API calls to concurrent `asyncio.gather`, and offloading CPU-bound preprocessing/inference out of an `async def` path (`asyncio.to_thread` / `run_in_executor`), are exactly what the `python-async-scaling` skill covers in `asyncio-fundamentals.md` — invoke it instead of reproducing the before/after here. It also flags the specific ML libraries (PyTorch/transformers inference, tokenization, docling, EasyOCR) that silently block the event loop if called directly.
 
 ## Memory Optimization
 

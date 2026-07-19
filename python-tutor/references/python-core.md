@@ -227,35 +227,9 @@ async for item in async_generator():
 results = [await process(item) async for item in async_generator()]
 ```
 
-### Gather for Concurrent Operations
+### Concurrency: gather and TaskGroup
 
-```python
-# Before: Sequential awaits
-result1 = await fetch_data(url1)
-result2 = await fetch_data(url2)
-result3 = await fetch_data(url3)
-
-# After: Concurrent with gather
-import asyncio
-results = await asyncio.gather(
-    fetch_data(url1),
-    fetch_data(url2),
-    fetch_data(url3)
-)
-```
-
-### TaskGroup (3.11+)
-
-```python
-# Before: Manual task management
-tasks = [asyncio.create_task(fetch(url)) for url in urls]
-results = await asyncio.gather(*tasks)
-
-# After: TaskGroup (3.11+)
-async with asyncio.TaskGroup() as tg:
-    tasks = [tg.create_task(fetch(url)) for url in urls]
-results = [task.result() for task in tasks]
-```
+Sequential `await` calls that could run concurrently, and manual `create_task` + `gather` that could be a 3.11+ `TaskGroup`, are core `python-async-scaling` territory (`asyncio-fundamentals.md` §3) — invoke that skill for the pattern, cancellation semantics, and `return_exceptions` nuance. This skill's own value-add here is purely the version gate: don't suggest `TaskGroup` on a codebase pinned below 3.11 (check `requires-python` first).
 
 ## Error Handling
 
